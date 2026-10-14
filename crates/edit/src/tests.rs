@@ -3470,3 +3470,12 @@ fn korean_added_text_is_drawable_and_survives_save() {
     assert!(text::text_lines(&reopened, 0).unwrap().iter().any(|line| line.text == t.text));
     assert!(String::from_utf8_lossy(&page_content_bytes(&reopened, 0)).contains("/PCKr"));
 }
+
+#[test]
+fn missing_korean_face_reports_the_hangul_character() {
+    if !pdfcraft_fonts::document_korean_fonts_for_style(false).is_empty() {
+        return;
+    }
+    let t = added::AddedText { text: "ABC 제안서 시험".into(), ..Default::default() };
+    assert_eq!(added::first_undrawable(&t), Some('제'));
+}

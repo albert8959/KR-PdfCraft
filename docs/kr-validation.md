@@ -26,3 +26,9 @@ With `PDFCRAFT_SYSTEM_FONTS=0`, the initial Nanum-only glyph coverage test faile
 `packaging/macos/package.sh --development --arch aarch64 --skip-build` produced a 32 MiB DMG and a 20 MiB CLI ZIP. Ad-hoc signatures passed strict verification on the app, DMG, the app mounted from the DMG and CLI. Both font license files, MIT/Apache notices and attribution are included. The development package has no OCR models and is not Apple-notarized. The final native executable reopened without a language argument and retained Korean UI settings. The final CLI repeated synthetic PDF creation/save/reopen/search/render successfully.
 
 Native macOS testing used the installed macOS 26.5 SDK and Command Line Tools to avoid the host's macOS 27 SDK/linker mismatch. This is an environment workaround, not a runtime product fix. The wasm compile succeeded with three existing dead-code warnings; native scoped clippy passed with warnings denied. No remote CI success is claimed until a GitHub run completes.
+
+## Follow-up native IME and CI validation
+
+The packaged application was launched through macOS. With the already-active Korean input source, native key events in the tool-search field produced ㅎ → 한 → 한글. Backspace during composition changed 한글 to 한그; retyping the final consonant restored 한글. Space followed by the first Hangul key retained 한글 ㅎ, and Enter committed 한글 한. These observations cover basic search-field IME composition; focus transitions and PDF text-editor IME flows remain unverified.
+
+The first remote CI run exposed two stale macOS packaging assertions (original bundle id and an icon required despite the intentional generic icon), and a real missing-Korean-font error-reporting bug. The latter reported Latin A instead of the unsupported 제. A new small regression failed with Some('A') before the fix and passes afterward. Editing tests now total 135; the no-font edit/xtask tests and scoped clippy passed.

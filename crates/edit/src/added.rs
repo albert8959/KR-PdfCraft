@@ -328,6 +328,10 @@ fn is_arabic(c: char) -> bool {
 pub fn first_undrawable(t: &AddedText) -> Option<char> {
     if t.text.chars().any(crate::text::is_hangul) {
         let faces = pdfcraft_fonts::document_korean_fonts_for_style(t.bold);
+        if faces.is_empty() {
+            // Latin still has the standard font; report the actual unsupported character.
+            return t.text.split('\n').find_map(pdfcraft_fonts::first_non_win_ansi);
+        }
         return t.text.chars().filter(|c| *c != '\n').find(|c| !faces.iter().any(|face| pdfcraft_fonts::japanese_glyph_from(face, *c).is_ok()));
     }
     if t.text.chars().any(is_thai) {
