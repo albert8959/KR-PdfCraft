@@ -47,3 +47,7 @@ UI 표시와 PDF 문서 내부의 글꼴은 별개입니다. 이 변경만으로
 설치 패키지를 만들더라도 Apple 개발자 서명·공증이 없는 개발용 빌드와 공식 배포판을 구분합니다. 업데이트 확인 링크는 이 포크의 Releases로 연결합니다. 설정·복구 폴더도 원본과 분리합니다. 초기 macOS 패키지는 원본 앱 아이콘 대신 시스템 기본 아이콘을 사용합니다.
 
 개발용 macOS 설치 파일 재현: 위 글꼴을 준비하고 앱을 빌드한 뒤 `CRAFT_FONTS_DIR="$PWD/../craft-fonts-kr" packaging/macos/package.sh --development --arch aarch64 --skip-build`를 실행합니다. Apple Silicon 호스트용이며 정식 서명·공증은 포함하지 않습니다.
+
+## GitHub 자동 검사
+
+포크의 Actions를 활성화하면 PR에서 Linux/Windows 테스트와 웹 컴파일·라이선스 검사를 실행합니다. 정기 야간/주간 실행은 제거했고, 원본 전용 Windows ARM64 패키징과 자동 배포는 이 포크에서 실행하지 않습니다. macOS 개발용 패키지는 위의 로컬 빌드 절차를 사용합니다.
