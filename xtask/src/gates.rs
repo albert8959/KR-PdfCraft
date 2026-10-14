@@ -295,15 +295,15 @@ mod tests {
         assert!(pdf.contains("<string>com.adobe.pdf</string>"), "claim PDFs by UTI, not just extension/MIME");
         assert!(pdf.contains("<string>Editor</string>"), "PDF role stays Editor");
         assert!(pdf.contains("<string>Alternate</string>"), "rank stays Alternate: offered without taking over Preview");
-        assert!(pdf.contains("<key>CFBundleTypeIconFile</key>"), "declares document icon file for Finder");
+        assert!(!pdf.contains("<key>CFBundleTypeIconFile</key>"), "development fork uses the generic Finder document icon");
     }
 
     // The bundle id must match the app id the binary uses; renames change both (#174).
     #[test]
     fn macos_bundle_id_matches_app_id() {
-        assert!(read("packaging/macos/Info.plist.in").contains("<string>ai.storyteller.pdfcraft</string>"), "bundle id");
+        assert!(read("packaging/macos/Info.plist.in").contains("<string>io.github.albert8959.kr-pdfcraft</string>"), "bundle id");
         let main = read("apps/pdfcraft/src/main.rs");
-        assert!(main.contains(r#"const APP_ID: &str = "ai.storyteller.pdfcraft""#), "APP_ID drifted from the bundle id");
+        assert!(main.contains(r#"const APP_ID: &str = "io.github.albert8959.kr-pdfcraft""#), "APP_ID drifted from the bundle id");
     }
 
     // Committed file with `<!-- -->` comments stripped, so a commented-out claim cannot pass.

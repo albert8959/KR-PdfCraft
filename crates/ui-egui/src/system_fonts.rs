@@ -2,9 +2,8 @@
 //!
 //! The embedded faces (Inter, egui's defaults, craft-fonts) come first in every family; this one
 //! only draws characters none of them has, such as an Arabic file name in a build without
-//! craft-fonts, or the Simplified Chinese interface in a build without a `Hans` face (#826). A
-//! second and a third installed face, [`devanagari_fallback`] and [`telugu_fallback`], draw Hindi
-//! and Telugu when one is installed. It is
+//! craft-fonts, or the Simplified Chinese interface in a build without a `Hans` face (#826).
+//! Additional installed faces draw Hindi, Telugu and Hangul when available. Each is
 //! read at runtime and never embedded or shipped (AGENTS.md §1.4), and `PDFCRAFT_SYSTEM_FONTS=0`
 //! turns it off (published screenshots do).
 
@@ -15,7 +14,7 @@ use egui::FontData;
 
 /// Larger files are not read: a font path is still untrusted input.
 const MAX_BYTES: u64 = 32 << 20;
-/// Chinese system faces are big collections (PingFang, STHeiti), so they get a higher cap.
+/// CJK system faces are big collections (Apple SD Gothic Neo, PingFang), so they get a higher cap.
 const MAX_HAN_BYTES: u64 = 96 << 20;
 /// Faces tried in a collection (`.ttc`).
 const MAX_FACES: u32 = 16;
@@ -25,6 +24,8 @@ const PROBE: char = '\u{0627}';
 const DEVANAGARI_PROBE: char = '\u{0915}';
 /// Telugu letter ka: the face must have it to cover Telugu.
 const TELUGU_PROBE: char = '\u{0C15}';
+/// Hangul syllable han: excludes Japanese-only faces.
+const KOREAN_PROBE: char = '\u{D55C}';
 /// 欢 (U+6B22): Simplified only, absent from the Japanese craft-fonts faces.
 const HANS_PROBE: char = '\u{6B22}';
 /// 說 (U+8AAA): Traditional only, absent from the Japanese craft-fonts faces.
@@ -80,6 +81,30 @@ pub fn devanagari_fallback() -> Option<Arc<FontData>> {
 pub fn telugu_fallback() -> Option<Arc<FontData>> {
     static CACHE: OnceLock<Option<Arc<FontData>>> = OnceLock::new();
     CACHE.get_or_init(|| script_fallback(&telugu_candidates(), TELUGU_PROBE)).clone()
+}
+
+/// An installed Hangul face for UI text only. macOS's Apple SD Gothic Neo collection exceeds
+/// the ordinary 32 MiB limit, so use the bounded CJK limit. Never embed this face in documents.
+pub fn korean_fallback() -> Option<Arc<FontData>> {
+    static CACHE: OnceLock<Option<Arc<FontData>>> = OnceLock::new();
+    CACHE
+        .get_or_init(|| {
+            if std::env::var_os("PDFCRAFT_SYSTEM_FONTS").is_some_and(|v| v == "0") {
+                return None;
+            }
+            korean_candidates().iter().find_map(|path| read(path, KOREAN_PROBE, MAX_HAN_BYTES))
+        })
+        .clone()
+}
+
+fn korean_candidates() -> Vec<PathBuf> {
+    if cfg!(target_os = "macos") {
+        ["/System/Library/Fonts/AppleSDGothicNeo.ttc", "/System/Library/Fonts/Supplemental/AppleGothic.ttf"].iter().map(PathBuf::from).collect()
+    } else if cfg!(windows) {
+        ["malgun.ttf", "gulim.ttc"].iter().map(|f| windows_fonts().join(f)).collect()
+    } else {
+        unix_fonts(&["truetype/nanum/NanumGothic.ttf", "nanum/NanumGothic.ttf", "truetype/unfonts-core/UnDotum.ttf"])
+    }
 }
 
 fn script_fallback(candidates: &[PathBuf], probe: char) -> Option<Arc<FontData>> {
@@ -266,6 +291,7 @@ mod tests {
         assert_eq!(face_with(inter, PROBE), None);
         assert_eq!(face_with(inter, HANS_PROBE), None);
         assert_eq!(face_with(inter, HANT_PROBE), None);
+        assert_eq!(face_with(inter, KOREAN_PROBE), None);
         assert_eq!(face_with(inter, 'A'), Some(0));
     }
 
@@ -296,7 +322,7 @@ mod tests {
 
     #[test]
     fn script_candidates_are_absolute_font_files() {
-        for list in [devanagari_candidates(), telugu_candidates()] {
+        for list in [devanagari_candidates(), telugu_candidates(), korean_candidates()] {
             assert!(!list.is_empty());
             assert!(list.iter().all(|p| p.is_absolute() || cfg!(windows)), "{list:?}");
             assert!(list.iter().all(|p| p.extension().is_some_and(|e| e == "ttf" || e == "ttc")), "{list:?}");

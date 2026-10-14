@@ -61,7 +61,7 @@ warn() {
 # Copy licence and readme files that exist into a package directory.
 copy_docs() {
   local dest="$1" f
-  for f in README.md LICENSE LICENSE-MIT LICENSE-APACHE COPYRIGHT NOTICE; do
+  for f in README.md LICENSE LICENSE-MIT LICENSE-APACHE COPYRIGHT NOTICE ATTRIBUTION.md; do
     if [ -f "$ROOT/$f" ]; then cp "$ROOT/$f" "$dest/"; fi
   done
   copy_font_licences "$dest"
@@ -72,6 +72,12 @@ copy_docs() {
 copy_font_licences() {
   local dest="$1" f family
   [ -n "${CRAFT_FONTS_DIR:-}" ] || return 0
+  if [ -f "$CRAFT_FONTS_DIR/OFL.txt" ]; then
+    cp "$CRAFT_FONTS_DIR/OFL.txt" "$dest/OFL-NanumGothicCoding.txt"
+  fi
+  if [ -f "$CRAFT_FONTS_DIR/OFL-Unifont.txt" ]; then
+    cp "$CRAFT_FONTS_DIR/OFL-Unifont.txt" "$dest/OFL-Unifont.txt"
+  fi
   for f in "$CRAFT_FONTS_DIR"/fonts/*/OFL.txt; do
     [ -f "$f" ] || continue
     family="$(basename "$(dirname "$f")")"

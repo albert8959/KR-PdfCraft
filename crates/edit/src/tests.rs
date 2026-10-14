@@ -3443,3 +3443,39 @@ fn an_items_measured_face_is_the_face_it_is_written_as() {
     let courier = |italic| Family::Courier.width("Anna", 12.0, false, italic);
     assert_eq!(courier(false), courier(true));
 }
+
+#[test]
+fn korean_replacement_survives_save_and_reopen() {
+    if !pdfcraft_fonts::CRAFT_FONTS.iter().any(|f| f.covers("Kore")) {
+        eprintln!("Korean regression requires the Korean craft-fonts build input");
+        return;
+    }
+    let mut doc = text_page("BT /F2 12 Tf 72 700 Td (Original) Tj ET");
+    let replacement = "한글 PDF 수정 테스트 가나다 123";
+    text::replace_line(&mut doc, 0, 0, replacement).unwrap();
+    let reopened = reopen(&doc);
+    assert_eq!(text::text_lines(&reopened, 0).unwrap()[0].text, replacement);
+}
+
+#[test]
+fn korean_added_text_is_drawable_and_survives_save() {
+    if !pdfcraft_fonts::CRAFT_FONTS.iter().any(|f| f.covers("Kore")) {
+        return;
+    }
+    let mut doc = text_page("BT /F2 12 Tf 72 700 Td (Original) Tj ET");
+    let t = added::AddedText { text: "새 한글 가나다 123".into(), rect: [50.0, 300.0, 350.0, 360.0], ..Default::default() };
+    assert_eq!(added::first_undrawable(&t), None);
+    added::add_content(&mut doc, 0, &added::Content::Text(t.clone())).unwrap();
+    let reopened = reopen(&doc);
+    assert!(text::text_lines(&reopened, 0).unwrap().iter().any(|line| line.text == t.text));
+    assert!(String::from_utf8_lossy(&page_content_bytes(&reopened, 0)).contains("/PCKr"));
+}
+
+#[test]
+fn missing_korean_face_reports_the_hangul_character() {
+    if !pdfcraft_fonts::document_korean_fonts_for_style(false).is_empty() {
+        return;
+    }
+    let t = added::AddedText { text: "ABC 제안서 시험".into(), ..Default::default() };
+    assert_eq!(added::first_undrawable(&t), Some('제'));
+}

@@ -32,6 +32,18 @@ fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> Harness<'static, P
 }
 
 #[test]
+fn korean_home_and_language_preference_persist() {
+    let h = harness(|app| app.set_option("language", "ko").unwrap());
+    h.get_by_label("KR-PdfCraft에 오신 것을 환영합니다");
+    h.get_by_label("추천 도구");
+    h.get_by_label("KR-PdfCraft 개발");
+    let saved = h.state().persist();
+    let mut reopened = PdfCraftApp::new();
+    reopened.restore(&saved);
+    assert_eq!(reopened.language, "ko");
+}
+
+#[test]
 fn home_shows_welcome_and_tools() {
     let h = harness(|_| {});
     h.get_by_label_contains("Welcome to PdfCraft");
@@ -330,7 +342,7 @@ fn tabs_shrink_to_fit_then_arrows_step_through_them_and_open_stays_in_sight() {
         }
     });
     let open = h.get_by_label("Open").rect();
-    let discord = h.get_by_label("Discord").rect();
+    let discord = h.get_by_label("GitHub").rect();
     assert!(open.right() <= discord.left(), "Open {open:?} must not run under Discord {discord:?}");
     let mut previous_right = f32::MIN;
     for i in 0..5 {
@@ -355,14 +367,14 @@ fn tabs_shrink_to_fit_then_arrows_step_through_them_and_open_stays_in_sight() {
     assert_eq!(enabled(&h, "Scroll tabs right"), Some(true), "and then there is more to the right");
     let open = h.get_by_label("Open").rect();
     let right = h.get_by_label("Scroll tabs right").rect();
-    assert!(right.right() <= open.left() + 0.5 && open.right() <= h.get_by_label("Discord").rect().left());
+    assert!(right.right() <= open.left() + 0.5 && open.right() <= h.get_by_label("GitHub").rect().left());
     // Twenty: Open stays in sight left of Discord.
     for i in 0..13 {
         h.state_mut().open_bytes(&format!("more-{i:02}.pdf"), None, FIXTURE.to_vec()).unwrap();
     }
     h.run_steps(4);
     let open = h.get_by_label("Open").rect();
-    let discord = h.get_by_label("Discord").rect();
+    let discord = h.get_by_label("GitHub").rect();
     assert!(open.left() > 0.0 && open.right() <= discord.left(), "Open {open:?} stays in sight left of Discord {discord:?}");
 }
 
@@ -376,7 +388,7 @@ fn the_integrated_title_bar_is_the_traffic_light_band() {
         app.open_bytes("band.pdf", None, FIXTURE.to_vec()).unwrap();
     });
     let band = 28.0;
-    for label in ["Home", "band.pdf", "Open", "Discord", "Keyboard shortcuts"] {
+    for label in ["Home", "band.pdf", "Open", "GitHub", "Keyboard shortcuts"] {
         let r = h.get_by_label(label).rect();
         assert!(r.top() >= 0.0 && r.bottom() <= band, "{label}: {r:?} inside the {band} pt title bar");
         assert!(r.height() >= 24.0, "{label}: {r:?} stays clickable");

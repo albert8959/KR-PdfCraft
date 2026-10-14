@@ -125,7 +125,7 @@ Measured from `crates/ui-egui/src/i18n/*.tsv` (2,143 keys). Detail and script no
 | Indonesian | `id` | 0% | none |
 | Japanese | `ja` | 99.1% | partial |
 | German | `de` | 99.3% | partial |
-| Korean | `ko` | 0% | none |
+| Korean | `ko` | partial (252 entries) | KR-PdfCraft validation in progress |
 | Vietnamese | `vi` | 0% | none |
 
 Also shipped: Traditional Chinese, Russian, Bulgarian, Telugu, Hungarian, Ukrainian, Italian
@@ -445,3 +445,7 @@ Newest first: the date, what moved, and the new overall estimate.
 | 2026-10-05 | major | Honest assessment and "Where we're lacking" added |
 
 - **2026-10-12 (M8):** Redaction cleans indirect and form structure references, preserving surviving form tags.
+
+## KR-PdfCraft fork progress
+
+- 2026-10-14: Initial Korean catalog, installed Hangul UI fallback, independent branding and macOS identity. Validation in `docs/kr-validation.md`; Korean PDF addition/replacement regressions pass with the optional OFL font input; end-to-end rendering and real IME interaction remain in validation. Upstream parity estimates above are inherited and not remeasured for this fork.

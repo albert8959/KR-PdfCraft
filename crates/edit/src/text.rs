@@ -1089,13 +1089,13 @@ const MAX_TYPE3_GLYPHS: usize = 240;
 /// The generated fonts for one replacement: one per run of at most `max_glyphs` unique characters,
 /// in order of first appearance.
 #[derive(Clone)]
-struct Type3Fallback {
+pub(crate) struct Type3Fallback {
     /// The family its glyphs come from ("Shippori Mincho").
     family: &'static str,
     /// The fonts' resource names in order; the first is `PCJp` (`PCHe` for Hebrew text).
-    names: Vec<String>,
+    pub(crate) names: Vec<String>,
     /// Every unique character with its advance (em), in order of first appearance.
-    widths: Vec<(char, f64)>,
+    pub(crate) widths: Vec<(char, f64)>,
     /// Where each character is shown: the index of its font in `names`, and its code there.
     codes: HashMap<char, (usize, u8)>,
 }
@@ -1189,11 +1189,25 @@ fn no_hebrew_font() -> EditError {
     )
 }
 
-/// The faces a Type 3 replacement may draw `text` with, best first. Text with Hebrew takes the
-/// Hebrew face first (its Latin and digits too, so a line keeps one look), then the Japanese
-/// faces for anything it lacks; other text takes the Japanese faces, as before.
+/// Hangul syllables and the standard, compatibility and extended Jamo ranges.
+pub(crate) fn is_hangul(ch: char) -> bool {
+    matches!(ch as u32, 0x1100..=0x11ff | 0x3130..=0x318f | 0xa960..=0xa97f | 0xac00..=0xd7af | 0xd7b0..=0xd7ff)
+}
+
+/// Korean text prefers Korean faces; Hebrew keeps its positioned-script restrictions.
 fn type3_faces(text: &str, family: crate::added::Family, bold: bool) -> Result<(Vec<&'static CraftFont>, bool), EditError> {
-    let japanese = pdfcraft_fonts::document_japanese_fonts_for_style(family == crate::added::Family::Times, bold);
+    let mut japanese = pdfcraft_fonts::document_japanese_fonts_for_style(family == crate::added::Family::Times, bold);
+    if text.chars().any(is_hangul) {
+        let korean = pdfcraft_fonts::document_korean_fonts_for_style(bold);
+        if korean.is_empty() {
+            return Err(EditError::Invalid(
+                "this build has no Korean document font; prepare the Korean craft-fonts input and rebuild with CRAFT_FONTS_DIR".into(),
+            ));
+        }
+        // Mixed Korean/Latin lines retain one real face where possible; Japanese faces remain
+        // available for characters the Korean font does not contain.
+        japanese = korean.into_iter().chain(japanese).collect();
+    }
     if !text.chars().any(crate::bidi::is_hebrew) {
         return Ok((japanese, false));
     }
@@ -1206,7 +1220,7 @@ fn type3_faces(text: &str, family: crate::added::Family, bold: bool) -> Result<(
     Ok((std::iter::once(hebrew).chain(japanese).collect(), true))
 }
 
-fn type3_font(
+pub(crate) fn type3_font(
     doc: &mut Document,
     fonts_res: &mut Dict,
     text: &str,
@@ -1326,7 +1340,7 @@ fn add_type3_font(doc: &mut Document, fonts_res: &mut Dict, face: &CraftFont, he
 
 /// The runs that show `text` in the fallback: consecutive characters in one font form one run, so
 /// a font is switched only where the text moves to another font. `None` if a character has no code.
-fn type3_encode(fallback: &Type3Fallback, text: &str) -> Option<Vec<(String, Vec<u8>)>> {
+pub(crate) fn type3_encode(fallback: &Type3Fallback, text: &str) -> Option<Vec<(String, Vec<u8>)>> {
     let mut runs: Vec<(usize, Vec<u8>)> = Vec::new();
     for ch in text.chars() {
         let (font, code) = *fallback.codes.get(&ch)?;

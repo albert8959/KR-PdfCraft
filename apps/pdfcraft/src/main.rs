@@ -45,55 +45,19 @@ mod updates;
 mod windows_manifest;
 
 /// Freedesktop app id: the `.desktop` file name and the hicolor icon name.
-const APP_ID: &str = "ai.storyteller.pdfcraft";
-
-/// The app icon (assets/app-icon/README.md). macOS gets the version on Apple's icon grid, with a
-/// transparent margin; Windows and Linux get the full-bleed tile.
 #[cfg(target_os = "macos")]
-const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/pdfcraft-1024.png");
+const APP_ID: &str = "io.github.albert8959.kr-pdfcraft";
 #[cfg(not(target_os = "macos"))]
-const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.pdfcraft.png");
-
-/// The app was called PrintCraft before; settings saved then are under this key.
-const LEGACY_STORAGE_KEY: &str = "printcraft";
+const APP_ID: &str = "ai.storyteller.pdfcraft";
 
 /// The settings folder: `app.ron` and the `logs` folder (docs/development.md). In portable mode
 /// it is `PdfCraftData` beside the executable (#157). eframe would otherwise derive it from the
-/// app id; keep it under "PdfCraft".
+/// app id; keep it under "KR-PdfCraft".
 fn settings_dir() -> Option<std::path::PathBuf> {
     if let Some(dir) = pdfcraft_ui_egui::portable::data_dir() {
         return Some(dir.to_path_buf());
     }
-    eframe::storage_dir("PdfCraft")
-}
-
-/// Move the settings and crash-recovery folders of the app's former name, PrintCraft, to the new
-/// name once, so an upgrade keeps recent files, preferences and unsaved work. Best effort: a
-/// folder is left alone when the new one already exists or the move fails. A portable copy leaves
-/// the per-user folders alone.
-fn migrate_legacy_folders() {
-    if pdfcraft_ui_egui::portable::data_dir().is_some() {
-        return;
-    }
-    let mut moves = vec![(eframe::storage_dir("PrintCraft"), settings_dir())];
-    // Recovery lives in the settings folder except on Windows, where it is under %LOCALAPPDATA%.
-    if cfg!(windows) {
-        let local = std::env::var_os("LOCALAPPDATA").filter(|v| !v.is_empty()).map(std::path::PathBuf::from);
-        moves.push((local.as_ref().map(|d| d.join("PrintCraft")), local.map(|d| d.join("PdfCraft"))));
-    }
-    for (old, new) in moves {
-        let (Some(old), Some(new)) = (old, new) else { continue };
-        if !old.is_dir() || new.exists() {
-            continue;
-        }
-        if let Some(parent) = new.parent() {
-            let _ = std::fs::create_dir_all(parent);
-        }
-        match std::fs::rename(&old, &new) {
-            Ok(()) => log::info!("moved {} to {}", old.display(), new.display()),
-            Err(e) => log::warn!("moving {} to {}: {e}", old.display(), new.display()),
-        }
-    }
+    eframe::storage_dir("KR-PdfCraft")
 }
 
 /// Desktop launchers (GNOME Files, KDE Dolphin…) only recognise an app as the default handler for a
@@ -202,7 +166,6 @@ fn main() -> eframe::Result {
     let integrated = cfg!(target_os = "macos");
     // GNOME on Wayland leaves the window frame to the app (src/decorations.rs).
     let window_controls = if cfg!(any(target_os = "macos", target_os = "windows")) { None } else { decorations::app_drawn() };
-    migrate_legacy_folders();
     // The log file lives in the settings folder; opened after the arguments (so `--version` leaves
     // no file behind) and after the PrintCraft migration (which a fresh folder would block).
     // Records logged until now are written to it first.
@@ -232,7 +195,7 @@ fn main() -> eframe::Result {
     let started = Rc::new(Cell::new(false));
     let first = if choice == RendererChoice::Gl { eframe::Renderer::Glow } else { eframe::Renderer::Wgpu };
     let result = eframe::run_native(
-        "PdfCraft",
+        "KR-PdfCraft",
         native_options(launch.integrated, launch.window_controls.is_some(), first),
         app_creator(
             launch.clone(),
@@ -250,7 +213,7 @@ fn main() -> eframe::Result {
             // usually still works there, so that's better than quitting.
             log::error!("the GPU renderer (wgpu) didn't start: {e}. Starting with OpenGL instead; set PDFCRAFT_RENDERER=gl to skip wgpu.");
             eframe::run_native(
-                "PdfCraft",
+                "KR-PdfCraft",
                 native_options(launch.integrated, launch.window_controls.is_some(), eframe::Renderer::Glow),
                 app_creator(
                     launch,
@@ -293,17 +256,12 @@ fn retry_with_gl(choice: RendererChoice, app_started: bool) -> bool {
 /// The window and renderer settings for one run.
 fn native_options(integrated: bool, app_frame: bool, renderer: eframe::Renderer) -> eframe::NativeOptions {
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("PdfCraft")
+        .with_title("KR-PdfCraft")
         .with_inner_size([1440.0, 920.0])
         .with_min_inner_size([820.0, 520.0])
         .with_drag_and_drop(true)
         // Wayland app id: matches packaging/linux/ai.storyteller.pdfcraft.desktop.
         .with_app_id(APP_ID);
-    // Dock, taskbar, Alt-Tab and launcher icon when running unbundled.
-    match eframe::icon_data::from_png_bytes(APP_ICON_PNG) {
-        Ok(icon) => viewport = viewport.with_icon(icon),
-        Err(e) => log::warn!("app icon: {e}"),
-    }
     if integrated {
         viewport = viewport.with_fullsize_content_view(true).with_titlebar_shown(false).with_title_shown(false);
     }
@@ -348,7 +306,7 @@ fn app_creator<'a>(
         app.enable_desktop_theme();
         // The system's reopen-windows choice (macOS) starts the preference; a saved choice replaces it.
         app.reopen_last_session = reopen::system_default();
-        if let Some(json) = cc.storage.and_then(|s| s.get_string("pdfcraft").or_else(|| s.get_string(LEGACY_STORAGE_KEY))) {
+        if let Some(json) = cc.storage.and_then(|s| s.get_string("pdfcraft")) {
             app.restore(&json);
         }
         app.integrated_titlebar = integrated;
@@ -1310,6 +1268,7 @@ mod tests {
 
     /// X11 startup notification and docks match a window to its launcher by `StartupWMClass`,
     /// so it has to be the class the window carries: the app id, on Wayland and X11 alike.
+    #[cfg(target_os = "linux")]
     #[test]
     fn the_desktop_entry_names_the_window_class() {
         let entry = include_str!("../../../packaging/linux/ai.storyteller.pdfcraft.desktop");

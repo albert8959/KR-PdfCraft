@@ -5,12 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: "17 3 * * *" # nightly fuzzing
 
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  CARGO_BUILD_JOBS: 2
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -68,6 +67,19 @@ jobs:
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
+      - name: Add verified Korean fonts to the optional build input (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cargo xtask korean-fonts "$RUNNER_TEMP/craft-fonts-kr"
+          cp "$RUNNER_TEMP/craft-fonts-kr/fonts/NanumGothicCoding.ttf" craft-fonts/fonts/
+          cp "$RUNNER_TEMP/craft-fonts-kr/fonts/NanumGothicCoding-Bold.ttf" craft-fonts/fonts/
+          cp "$RUNNER_TEMP/craft-fonts-kr/fonts/unifont-15.0.06.otf" craft-fonts/fonts/
+          cat "$RUNNER_TEMP/craft-fonts-kr/fonts/manifest.txt" >> craft-fonts/fonts/manifest.txt
+          mkdir -p craft-fonts/fonts/NanumGothicCoding
+          cp "$RUNNER_TEMP/craft-fonts-kr/OFL.txt" craft-fonts/fonts/NanumGothicCoding/OFL.txt
+          mkdir -p craft-fonts/fonts/Unifont
+          cp "$RUNNER_TEMP/craft-fonts-kr/OFL-Unifont.txt" craft-fonts/fonts/Unifont/OFL.txt
+
       - name: Format
         if: runner.os == 'Linux'
         run: cargo fmt --all -- --check
@@ -121,7 +133,7 @@ jobs:
 
   fuzz:
     name: fuzz (mutation, 15 min)
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

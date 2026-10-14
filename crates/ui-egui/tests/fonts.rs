@@ -230,6 +230,9 @@ fn chinese_ui_uses_an_installed_chinese_face() {
             assert_eq!(stack.iter().filter(|n| *n == theme::SYSTEM_FALLBACK).count(), 1, "{family:?}");
             let own = stack.iter().position(|n| n.starts_with("Inter") || n == "JetBrainsMono").expect("the app's own font");
             assert!(own < system, "{family:?}: {stack:?}");
+            if let Some(korean) = stack.iter().position(|n| n == theme::SYSTEM_KOREAN_FALLBACK) {
+                assert!(system < korean, "Chinese UI must keep its own Han face first: {stack:?}");
+            }
             if let Some(first_ja) = stack.iter().position(|n| n.starts_with("BIZ UDPGothic")) {
                 assert!(system < first_ja, "{family:?}: {stack:?}");
             }
@@ -256,7 +259,10 @@ fn ui_fonts_work_without_craft_fonts() {
     let mut fonts = Fonts::new(TextOptions::default(), theme::font_definitions());
     for id in families() {
         assert!(fonts.has_glyphs(&id, "PdfCraft"), "{id:?}");
-        assert_eq!(fonts.has_glyphs(&id, JAPANESE), !pdfcraft_fonts::ui_japanese_fonts().is_empty(), "{id:?}");
+        if !pdfcraft_fonts::ui_japanese_fonts().is_empty() {
+            assert!(fonts.has_glyphs(&id, JAPANESE), "{id:?}");
+        }
+        // Other optional interface fonts may cover Japanese too (e.g. Unifont).
     }
     assert!(layout_widths(&mut fonts, JAPANESE).iter().all(|w| w.is_finite() && *w > 0.0));
     assert!(layout_widths(&mut fonts, "PdfCraft").iter().all(|w| *w > 20.0));
@@ -303,5 +309,27 @@ fn primary_ui_fonts_cover_latin_and_cyrillic_catalogs() {
             missing.dedup();
             assert!(missing.is_empty(), "{code}: {name} lacks {missing:?}");
         }
+    }
+}
+
+/// KR-PdfCraft must render syllables, compatibility jamo and decomposed Hangul in every family.
+#[cfg(target_os = "macos")]
+#[test]
+fn korean_system_font_covers_hangul_in_every_family() {
+    let defs = theme::installed_font_definitions(theme::CjkPreference::Default);
+    if pdfcraft_fonts::ui_korean_fonts().is_empty() && !defs.font_data.contains_key(theme::SYSTEM_KOREAN_FALLBACK) {
+        eprintln!("Korean glyph coverage requires the Korean craft-fonts input or an installed Korean UI face");
+        return;
+    }
+    let mut fonts = Fonts::new(TextOptions::default(), defs);
+    let labels: String = include_str!("../src/i18n/ko.tsv")
+        .lines()
+        .filter(|line| !line.starts_with('#'))
+        .filter_map(|line| line.split('\t').nth(2))
+        .collect::<Vec<_>>()
+        .join(" ");
+    for id in families() {
+        assert!(fonts.has_glyphs(&id, "한국어 파일 이름 ㄱㅎㅏ 한"), "{id:?} lacks Hangul");
+        assert!(fonts.has_glyphs(&id, &labels), "{id:?} lacks Korean catalog glyphs");
     }
 }

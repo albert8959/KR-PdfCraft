@@ -1,0 +1,255 @@
+# Korean (ko) catalog: context<TAB>source<TAB>translation.
+# Contributor-original translations from English meanings, MIT OR Apache-2.0.
+# Initial coverage; missing entries intentionally fall back to English.
+	Menu	메뉴
+	File	파일
+	Edit	편집
+	Pages	페이지
+	View	보기
+	Help	도움말
+	Preferences	환경설정
+	Preferences…	환경설정…
+	Interface language	인터페이스 언어
+	Interface size	인터페이스 크기
+	Identity	사용자 정보
+	Name on new comments	새 주석에 표시할 이름
+	Open…	열기…
+	Open Recent	최근 파일 열기
+	Clear Recent Files	최근 파일 목록 지우기
+	Remove from Recent	최근 파일 목록에서 제거
+	Remove {name} from Recent	최근 파일 목록에서 {name} 제거
+	Folders	폴더
+	Unpin	고정 해제
+	Looking for PDFs…	PDF 찾는 중…
+	Save	저장
+	Close	닫기
+	Undo	실행 취소
+	Redo	다시 실행
+	Cut	잘라내기
+	Copy	복사
+	Select All	모두 선택
+	Find…	찾기…
+	Search	검색
+	Cancel	취소
+	OK	확인
+	Apply	적용
+	Done	완료
+	Delete	삭제
+	Remove	제거
+	Add	추가
+	Clear	지우기
+	Discard	버리기
+	Yes	예
+	No	아니요
+	Back	뒤로
+	Open	열기
+	Print…	인쇄…
+	Print	인쇄
+	Document Properties	문서 속성
+	General	일반
+	Description	설명
+	Security	보안
+	Fonts	글꼴
+	Title	제목
+	Author	작성자
+	Subject	주제
+	Keywords	키워드
+	Modified	수정한 날짜
+	Language	언어
+	Appearance	모양
+	Light	밝게
+	Dark	어둡게
+	Auto	자동
+	Home	홈
+	Welcome to PdfCraft	KR-PdfCraft에 오신 것을 환영합니다
+	An open-source PDF workbench — local, private, and scriptable.	내 컴퓨터에서 안전하게 사용하는 오픈소스 PDF 작업 도구입니다.
+	Recommended tools	추천 도구
+	All tools	모든 도구
+	Tools	도구
+	No recent files	최근 파일 없음
+	Bookmarks	책갈피
+	Comments	주석
+	Attachments	첨부 파일
+	Layers	레이어
+	Thumbnails	페이지 미리보기
+	Page thumbnails	페이지 미리보기
+	Organize pages	페이지 구성
+	Combine files	파일 결합
+	Extract pages	페이지 추출
+	Split document	문서 분할
+	Delete pages	페이지 삭제
+	Insert pages	페이지 삽입
+	Blank page	빈 페이지
+	Page	페이지
+	Zoom in	확대
+	Zoom out	축소
+	Actual size	실제 크기
+	Read	읽기
+	Single page	한 페이지
+	Next page	다음 페이지
+	Previous page	이전 페이지
+	Highlight	강조 표시
+	Underline	밑줄
+	Strikethrough	취소선
+	Text box	텍스트 상자
+	Sticky note	메모
+	Rectangle	사각형
+	Line	선
+	Arrow	화살표
+	Opacity	불투명도
+	Width	너비
+	Height	높이
+	Size	크기
+	Text	텍스트
+	Bold	굵게
+	Italic	기울임
+	Left	왼쪽
+	Center	가운데
+	Right	오른쪽
+	Reply	답글
+	Status	상태
+	Options	옵션
+	Password	암호
+	Export	내보내기
+	Export…	내보내기…
+	Browse…	찾아보기…
+	About PdfCraft	KR-PdfCraft 정보
+	Contributors	기여자
+	Models	모델
+	Version {v}	버전 {v}
+	Part of	원본 프로젝트
+	Join the ArtCraft community	원본 PdfCraft 커뮤니티
+	Get help, share feedback and follow development on Discord.	원본 프로젝트의 도움말과 개발 소식을 확인하세요.
+	Auto ({percent}%)	자동 ({percent}%)
+	KR-PdfCraft development	KR-PdfCraft 개발
+	Report issues and follow this independent fork on GitHub.	GitHub에서 문제를 제보하고 개발 소식을 확인하세요.
+	Independent fork of PdfCraft	PdfCraft 기반 독립 포크
+	KR-PdfCraft issues	KR-PdfCraft 문제 제보
+	KR-PdfCraft website	KR-PdfCraft 웹사이트
+	Create PDF from images…	이미지로 PDF 만들기…
+	Create PDF from multiple files…	여러 파일로 PDF 만들기…
+	Create separate PDFs…	개별 PDF 만들기…
+	Create PDF from clipboard	클립보드에서 PDF 만들기
+	Combine files…	파일 결합…
+	Save as…	다른 이름으로 저장…
+	Close file	파일 닫기
+	Close all	모두 닫기
+	Revert	저장한 상태로 되돌리기
+	Document properties…	문서 속성…
+	Advanced search…	고급 검색…
+	Copy pages	페이지 복사
+	Cut pages	페이지 잘라내기
+	Paste pages	페이지 붙여넣기
+	Fit visible	보이는 영역에 맞춤
+	Marquee zoom	선택 영역 확대
+	Take a snapshot	스냅샷 만들기
+	Column select	열 선택
+	Full screen mode	전체 화면 모드
+	Read mode	읽기 모드
+	Switch light / dark theme	밝은 테마와 어두운 테마 전환
+	Comments panel	주석 패널
+	Form fields panel	양식 필드 패널
+	Clear form	양식 지우기
+	Find tools and commands…	도구 및 명령 찾기…
+	Zoom	확대/축소
+	Zoom to page level	페이지 전체 맞춤
+	Fit to width	너비 맞춤
+	Display theme	표시 테마
+	Side panels	측면 패널
+	Enable Acrobat JavaScript	Acrobat JavaScript 활성화
+	Next / previous match	다음/이전 검색 결과
+	Copy selected text	선택한 텍스트 복사
+	Double-click	두 번 클릭
+	Select a word	단어 선택
+	Clear selection / close find	선택 해제/찾기 닫기
+	Rotate view	보기 회전
+	First / last page	첫 페이지/마지막 페이지
+	Previous / next page	이전 페이지/다음 페이지
+	Delete selected pages (Organize)	선택한 페이지 삭제 (페이지 구성)
+	Select all pages (Organize)	모든 페이지 선택 (페이지 구성)
+	Open a PDF ({key})	PDF 열기 ({key})
+	Dark gray theme	짙은 회색 테마
+	Light theme	밝은 테마
+	Appearance mode	모양 모드
+	Active	사용 중
+	Dark theme	어두운 테마
+	Appearance settings…	모양 설정…
+	Convert	변환
+	E-Sign	전자 서명
+	Print ({key})	인쇄 ({key})
+	Save ({key})	저장 ({key})
+	Document properties ({key})	문서 속성 ({key})
+	Find tools and commands	도구 및 명령 찾기
+	Fit to height	높이 맞춤
+	Rotate view clockwise	시계 방향으로 보기 회전
+	Rotate view counterclockwise	시계 반대 방향으로 보기 회전
+	Page navigation	페이지 이동
+	Previous view	이전 보기
+	Next view	다음 보기
+	Page display	페이지 표시
+	Continuous scrolling	연속 스크롤
+	Two-page view	두 페이지 보기
+	Show cover page in two-page view	두 페이지 보기에서 표지를 따로 표시
+	Use system setting	시스템 설정 사용
+	Light gray	밝은 회색
+	Dark gray	짙은 회색
+	Fields	필드
+	Signatures	서명
+	Accessibility Checker	접근성 검사
+	Compare	비교
+	Form fields	양식 필드
+	Zoom out ({key})	축소 ({key})
+	Zoom in ({key})	확대 ({key})
+	Rotate view clockwise ({key})	시계 방향으로 보기 회전 ({key})
+	Toggle fit page / fit width	페이지 맞춤/너비 맞춤 전환
+	Current page — type a page number or label (such as iv) and press Enter	현재 페이지 — 페이지 번호 또는 레이블 (예: iv)을 입력하고 Enter를 누르세요
+	Use now	지금 사용
+	Open file	파일 열기
+	Recent	최근 파일
+	Files you open in PdfCraft appear here. Drop a PDF anywhere to open it.	열었던 PDF가 여기에 표시됩니다. PDF를 창에 끌어 놓아 열 수 있습니다.
+	Privacy	개인정보 보호
+	PdfCraft works offline. No telemetry, no account, and no cloud processing unless you add a provider.	PDF 작업은 오프라인으로 처리됩니다. 계정이나 사용 정보 전송이 없으며, 공급자를 추가하기 전에는 클라우드 처리를 하지 않습니다.
+	Back to all tools	모든 도구로 돌아가기
+	Close panel	패널 닫기
+	View less	간략히 보기
+	View more	더 보기
+	Available	사용 가능
+	Ready	준비됨
+	Search tools and commands…	도구 및 명령 검색…
+	Open this local PDF?	이 로컬 PDF를 열까요?
+	This document is trying to open a local file:	이 문서가 다음 로컬 파일을 열려고 합니다:
+	Only allow this if you trust the source document.	원본 문서를 신뢰하는 경우에만 허용하세요.
+	Allow	허용
+	Animation effects	애니메이션 효과
+	Drag the selection to move it. Esc clears the selection.	선택한 항목을 끌어서 이동하세요. Esc를 누르면 선택을 해제합니다.
+	Shift-click to select several objects. Drag empty space to select an area.	Shift를 누른 채 클릭하면 여러 객체를 선택합니다. 빈 공간을 끌면 영역을 선택합니다.
+	Select at most 1000 objects at a time.	한 번에 최대 1000개의 객체를 선택할 수 있습니다.
+	Finish or discard the text being edited before selecting several objects.	여러 객체를 선택하기 전에 텍스트 편집을 완료하거나 버리세요.
+	Move object	객체 이동
+	Move objects	객체 이동
+	Vertical text cannot be moved with this selection.	세로 텍스트는 이 선택 항목과 함께 이동할 수 없습니다.
+	Text used as a clipping path cannot be moved with this selection.	클리핑 경로로 사용된 텍스트는 이 선택 항목과 함께 이동할 수 없습니다.
+	These objects could not be moved. Select them again and try a smaller move.	객체를 이동하지 못했습니다. 다시 선택한 뒤 더 짧은 거리로 이동해 보세요.
+	This page contains objects that cannot be selected together.	이 페이지에는 함께 선택할 수 없는 객체가 있습니다.
+key	Ctrl	Ctrl
+key	Shift	Shift
+key	Delete	Delete
+key	Esc	Esc
+key	Home	Home
+key	End	End
+key	Space	스페이스
+animation effects	On	켜기
+animation effects	Off	끄기
+@plural	{n} object selected|{n} objects selected	객체 {n}개 선택됨
+	Export a PDF	PDF 내보내기
+	Fill & Sign	양식 입력 및 서명
+	Edit a PDF	PDF 편집
+	Create a PDF	PDF 만들기
+	Add comments	주석 추가
+	Scan & OCR	스캔 및 문자 인식
+	Protect a PDF	PDF 보호
+	Redact a PDF	PDF 내용 가리기
+	Compress a PDF	PDF 압축
+	Prepare a form	양식 만들기
+	Add a stamp	도장 추가
+	Use a certificate	인증서 사용

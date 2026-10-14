@@ -198,3 +198,9 @@ M2 (renderer), M7 (content editing), M10 (OCR and Office), M11 (Preflight and st
 | 2026-10-10 | minor | Re-judged convert and share with the cross-app gate rule (only a workflow that can't be completed at all blocks): partial, not blocking → stage alpha |
 | 2026-10-10 | minor | Added the alpha gate (six core workflows; convert and share fails → pre-alpha, 40–70 h to alpha) and rank 0 in the upcoming milestones |
 | 2026-10-10 | major | Created from ROADMAP.md §Milestones, §Critical path, §Risks and §Where we're lacking. Merged the duplicated M1, M2, M3 and M14 rows, re-measured Done and Remaining, added Current focus and the ranked upcoming milestones |
+
+## KR-PdfCraft milestone
+
+| Milestone | Status | Evidence / remaining work |
+|---|---|---|
+| KR-0.1: Korean UI and macOS Hangul fallback | In validation | `kr-validation.md`; partial translation, PDF document fonts and physical IME checks remain |

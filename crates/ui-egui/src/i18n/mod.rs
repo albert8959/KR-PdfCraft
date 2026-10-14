@@ -147,8 +147,9 @@ fn plural_sl(n: u64) -> usize {
 }
 
 /// The registry. English first: it is the fallback and the source language.
-pub static LANGUAGES: [LangInfo; 22] = [
+pub static LANGUAGES: [LangInfo; 23] = [
     LangInfo { code: "en", name: "English", source: "", plural: plural_one_other, rtl: false, catalog: OnceLock::new() },
+    LangInfo { code: "ko", name: "한국어", source: include_str!("ko.tsv"), plural: plural_none, rtl: false, catalog: OnceLock::new() },
     LangInfo { code: "ja", name: "日本語", source: include_str!("ja.tsv"), plural: plural_none, rtl: false, catalog: OnceLock::new() },
     // Simplified Chinese; `zh`, `zh-CN`, `zh-SG` and `zh-Hans-*` locales resolve here (see `candidates`).
     LangInfo {
@@ -525,6 +526,12 @@ pub fn edit_label(label: &pdfcraft_engine::Label) -> String {
 /// whose word order doesn't put the verb first translates "Undo {action}" and "Redo {action}"
 /// as whole phrases; otherwise the translated verb goes before the action.
 pub fn command_label(text: &str) -> String {
+    // Retain upstream command IDs and catalog compatibility while identifying this fork honestly.
+    match text {
+        "Join the ArtCraft Discord" => return t("KR-PdfCraft issues").to_owned(),
+        "ArtCraft website" => return t("KR-PdfCraft website").to_owned(),
+        _ => {}
+    }
     for (prefix, template) in [("Undo", "Undo {action}"), ("Redo", "Redo {action}")] {
         if let Some(action) = text.strip_prefix(prefix).and_then(|tail| tail.strip_prefix(' ')) {
             let action = action_label(action);
@@ -540,6 +547,9 @@ pub fn command_label(text: &str) -> String {
 /// A registered command's menu label: its `@id` catalog entry if there is one, otherwise
 /// [`command_label`] of the current English label.
 pub fn menu_label(id: &str, label: &str) -> String {
+    if matches!(id, "help.discord" | "help.website") {
+        return command_label(label);
+    }
     match current().catalog().id(id) {
         Some(translated) => translated.to_owned(),
         None => command_label(label),
@@ -3040,6 +3050,18 @@ mod tests {
                 assert!(missing.is_empty(), "{build}: {id:?} lacks Arabic label glyphs {missing:?}");
             }
         }
+    }
+
+    #[test]
+    fn korean_locale_translation_and_english_fallback() {
+        let ko = Lang::from_code("ko").unwrap();
+        assert_eq!(lang_from_tag("ko-KR").unwrap().code(), "ko");
+        assert_eq!(normalize_pref("ko"), Some("ko"));
+        assert_eq!(tr(ko, "File"), "파일");
+        assert_eq!(tr(ko, "Save"), "저장");
+        assert_eq!(tr(ko, "Cancel"), "취소");
+        assert_eq!(tr(ko, "untranslated-sentinel"), "untranslated-sentinel");
+        assert_eq!(fmt(tr(ko, "Version {v}"), &[("v", "0.1")]), "버전 0.1");
     }
 
     /// Every bundled catalog is well-formed and consistent with its sources.
