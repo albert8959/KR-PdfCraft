@@ -68,6 +68,19 @@ jobs:
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
+      - name: Add verified Korean fonts to the optional build input (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cargo xtask korean-fonts "$RUNNER_TEMP/craft-fonts-kr"
+          cp "$RUNNER_TEMP/craft-fonts-kr/fonts/NanumGothicCoding.ttf" craft-fonts/fonts/
+          cp "$RUNNER_TEMP/craft-fonts-kr/fonts/NanumGothicCoding-Bold.ttf" craft-fonts/fonts/
+          cp "$RUNNER_TEMP/craft-fonts-kr/fonts/unifont-15.0.06.otf" craft-fonts/fonts/
+          cat "$RUNNER_TEMP/craft-fonts-kr/fonts/manifest.txt" >> craft-fonts/fonts/manifest.txt
+          mkdir -p craft-fonts/fonts/NanumGothicCoding
+          cp "$RUNNER_TEMP/craft-fonts-kr/OFL.txt" craft-fonts/fonts/NanumGothicCoding/OFL.txt
+          mkdir -p craft-fonts/fonts/Unifont
+          cp "$RUNNER_TEMP/craft-fonts-kr/OFL-Unifont.txt" craft-fonts/fonts/Unifont/OFL.txt
+
       - name: Format
         if: runner.os == 'Linux'
         run: cargo fmt --all -- --check

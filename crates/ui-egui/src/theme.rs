@@ -220,6 +220,8 @@ pub const SYSTEM_FALLBACK: &str = "system-fallback";
 pub const SYSTEM_DEVANAGARI_FALLBACK: &str = "system-devanagari-fallback";
 /// The name of the installed Telugu face [`installed_font_definitions`] may add.
 pub const SYSTEM_TELUGU_FALLBACK: &str = "system-telugu-fallback";
+/// The installed Hangul face, available even when the interface language is English.
+pub const SYSTEM_KOREAN_FALLBACK: &str = "system-korean-fallback";
 
 /// What [`install_fonts_for`] installs: [`font_definitions_for`], then, on desktop, one face
 /// already installed on this machine. It only draws characters no embedded face has.
@@ -232,8 +234,8 @@ pub const SYSTEM_TELUGU_FALLBACK: &str = "system-telugu-fallback";
 /// - Otherwise it is the last fallback of every family (an Arabic file name in a build without
 ///   craft-fonts).
 ///
-/// An installed Devanagari face and an installed Telugu face, when there are, end every family
-/// just before that one, so Hindi and Telugu text draw in a build without such faces (#1531).
+/// Installed Hangul, Devanagari and Telugu faces, when available, precede the general fallback.
+/// This also covers Korean file names when the interface language is English.
 ///
 /// `PDFCRAFT_SYSTEM_FONTS=0` leaves them out.
 pub fn installed_font_definitions(cjk: CjkPreference) -> FontDefinitions {
@@ -244,6 +246,7 @@ pub fn installed_font_definitions(cjk: CjkPreference) -> FontDefinitions {
         use crate::system_fonts::{Need, fallback};
         // Before the general installed face, which stays the last fallback outside Chinese.
         for (name, data) in [
+            (SYSTEM_KOREAN_FALLBACK, crate::system_fonts::korean_fallback()),
             (SYSTEM_DEVANAGARI_FALLBACK, crate::system_fonts::devanagari_fallback()),
             (SYSTEM_TELUGU_FALLBACK, crate::system_fonts::telugu_fallback()),
         ] {
@@ -265,7 +268,7 @@ pub fn installed_font_definitions(cjk: CjkPreference) -> FontDefinitions {
             for stack in fonts.families.values_mut() {
                 let at = match need {
                     Need::Other => None,
-                    Need::Hans | Need::Hant => stack.iter().position(|n| japanese.contains(n)),
+                    Need::Hans | Need::Hant => stack.iter().position(|n| japanese.contains(n) || n == SYSTEM_KOREAN_FALLBACK),
                 };
                 stack.insert(at.unwrap_or(stack.len()), SYSTEM_FALLBACK.to_owned());
             }
@@ -345,6 +348,7 @@ fn font_definitions_for_platform(prefer_hans: bool, platform: FontPolicyPlatform
         .chain(pdfcraft_fonts::ui_telugu_fonts())
         .chain(pdfcraft_fonts::ui_hebrew_fonts())
         .chain(pdfcraft_fonts::ui_thai_fonts())
+        .chain(pdfcraft_fonts::ui_korean_fonts())
     {
         let name = face.name();
         if !fonts.font_data.contains_key(&name) {

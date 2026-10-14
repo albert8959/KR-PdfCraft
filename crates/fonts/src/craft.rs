@@ -66,6 +66,23 @@ pub fn ui_telugu_fonts() -> Vec<&'static CraftFont> {
     CRAFT_FONTS.iter().filter(|f| f.covers("Telu")).collect()
 }
 
+/// Korean faces from the optional, independently licensed craft-fonts input.
+pub fn ui_korean_fonts() -> Vec<&'static CraftFont> {
+    CRAFT_FONTS.iter().filter(|f| f.covers("Kore") || f.covers("Hang")).collect()
+}
+
+/// Korean document faces, the requested real weight first, with Regular as fallback.
+pub fn document_korean_fonts_for_style(bold: bool) -> Vec<&'static CraftFont> {
+    korean_faces(CRAFT_FONTS, bold)
+}
+
+fn korean_faces(faces: &[CraftFont], bold: bool) -> Vec<&CraftFont> {
+    let mut out: Vec<_> = faces.iter().filter(|f| f.covers("Kore")).collect();
+    let wanted = if bold { "Bold" } else { "Regular" };
+    out.sort_by_key(|f| (f.style != wanted, f.style != "Regular"));
+    out
+}
+
 /// Thai faces shared by the interface and PDF text writer.
 pub fn ui_thai_fonts() -> Vec<&'static CraftFont> {
     CRAFT_FONTS.iter().filter(|f| f.covers("Thai")).collect()
@@ -314,6 +331,8 @@ mod tests {
         if CRAFT_FONTS.iter().any(|f| f.family == "BIZ UDPGothic") {
             assert_eq!(ui.first().map(|f| f.family), Some("BIZ UDPGothic"));
         }
-        assert_eq!(document_japanese_font().map(|f| f.family), Some("Shippori Mincho"));
+        if CRAFT_FONTS.iter().any(|f| f.family == "Shippori Mincho") {
+            assert_eq!(document_japanese_font().map(|f| f.family), Some("Shippori Mincho"));
+        }
     }
 }

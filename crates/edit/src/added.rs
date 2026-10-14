@@ -239,6 +239,7 @@ fn wrapped(t: &AddedText) -> Vec<(String, bool)> {
     let width = (t.rect[2] - t.rect[0]).max(t.size);
     let mut out = Vec::new();
     for para in t.text.split('\n') {
+        let korean = para.chars().any(crate::text::is_hangul);
         let arabic = para.chars().any(is_arabic);
         let thai = para.chars().any(is_thai);
         if thai
@@ -253,7 +254,15 @@ fn wrapped(t: &AddedText) -> Vec<(String, bool)> {
         // sum of its words' and shaping stays linear in the paragraph's length. The space is the
         // paragraph's; a space between Latin words is drawn in the item's font, a few hundredths
         // of an em apart.
-        let measure = |s: &str| if arabic || thai { shaped_width(t, s, rtl) } else { t.family.width(s, t.size, t.bold, t.italic) };
+        let measure = |s: &str| {
+            if korean {
+                korean_width(t, s)
+            } else if arabic || thai {
+                shaped_width(t, s, rtl)
+            } else {
+                t.family.width(s, t.size, t.bold, t.italic)
+            }
+        };
         let space = measure(" ");
         let (mut line, mut line_w) = (String::new(), 0.0);
         for word in para.split(' ') {
@@ -317,6 +326,10 @@ fn is_arabic(c: char) -> bool {
 /// with the craft-fonts Arabic face (#125), or Arabic that the face can't draw (or that has no
 /// face to draw it). Page-content tools refuse such text; the Add-text editor keeps it open.
 pub fn first_undrawable(t: &AddedText) -> Option<char> {
+    if t.text.chars().any(crate::text::is_hangul) {
+        let faces = pdfcraft_fonts::document_korean_fonts_for_style(t.bold);
+        return t.text.chars().filter(|c| *c != '\n').find(|c| !faces.iter().any(|face| pdfcraft_fonts::japanese_glyph_from(face, *c).is_ok()));
+    }
     if t.text.chars().any(is_thai) {
         if let Some(c) = t.text.chars().find(|c| is_thai(*c) && !pdfcraft_fonts::thai_has(*c)) {
             return Some(c);
@@ -465,6 +478,64 @@ pub fn text_rect(t: &AddedText) -> [f64; 4] {
     let r = norm(t.rect);
     let h = lines(t).len().max(1) as f64 * t.size * 1.2;
     [r[0], r[3] - h, r[2], r[3]]
+}
+
+fn korean_width(t: &AddedText, text: &str) -> f64 {
+    let faces = pdfcraft_fonts::document_korean_fonts_for_style(t.bold);
+    text.chars().map(|ch| faces.iter().find_map(|f| pdfcraft_fonts::japanese_glyph_from(f, ch).ok()).map_or(1.0, |g| g.width) * t.size).sum()
+}
+
+/// Reuses the replacement writer's bounded outlines and Unicode maps for added Korean text.
+fn draw_korean(doc: &mut Document, t: &AddedText, taken: &Dict, out: &mut Vec<u8>) -> Result<Dict, EditError> {
+    let text: String = t.text.chars().filter(|c| *c != '\n').collect();
+    let mut fonts = taken.clone();
+    let mut fallback = crate::text::type3_font(doc, &mut fonts, &text, t.family, t.bold, GLYPHS_PER_FONT)?;
+    // Added items own their generated fonts. A separate prefix lets deletion reclaim them
+    // without touching fonts used by edited original text or another item.
+    for name in &mut fallback.names {
+        let object = fonts.remove(name.as_bytes()).ok_or_else(|| EditError::Invalid("generated Korean font resource is missing".into()))?;
+        let mut suffix = 0usize;
+        let mut new_name = String::from("PCKr");
+        while fonts.contains(new_name.as_bytes()) {
+            suffix = suffix.saturating_add(1);
+            new_name = format!("PCKr{suffix}");
+        }
+        fonts.set(new_name.as_bytes().to_vec(), object);
+        *name = new_name;
+    }
+    let r = text_rect(t);
+    let [cr, cg, cb] = t.color.map(|v| v.clamp(0.0, 1.0));
+    out.extend(format!("BT {} {} {} rg\n", n(cr), n(cg), n(cb)).bytes());
+    let all = lines(t);
+    for (i, line) in all.iter().enumerate() {
+        let width: f64 = line.chars().filter_map(|ch| fallback.widths.iter().find(|(c, _)| *c == ch).map(|(_, w)| *w * t.size)).sum();
+        let x = match t.align {
+            Align::Left | Align::Justify => r[0],
+            Align::Center => r[0] + ((r[2] - r[0]) - width) / 2.0,
+            Align::Right => r[2] - width,
+        };
+        let y = r[3] - (i as f64 * 1.2 + 0.95) * t.size;
+        out.extend(format!("1 0 0 1 {} {} Tm ", n(x), n(y)).bytes());
+        let runs =
+            crate::text::type3_encode(&fallback, line).ok_or_else(|| EditError::Invalid("Korean text contains an unencoded character".into()))?;
+        let spaces = line.chars().filter(|c| *c == ' ').count();
+        let extra = if t.align == Align::Justify && i + 1 < all.len() && spaces > 0 { ((r[2] - r[0]) - width).max(0.0) / spaces as f64 } else { 0.0 };
+        let mut chars = line.chars();
+        for (name, bytes) in runs {
+            out.extend(format!("/{name} {} Tf [", n(t.size)).bytes());
+            for byte in bytes {
+                out.extend(literal(&[byte]));
+                if chars.next() == Some(' ') && extra > 0.0 {
+                    // Type 3 codes are not WinAnsi; Tw would only affect code 32. TJ applies
+                    // spacing to the actual Unicode space regardless of its assigned code.
+                    out.extend(format!(" {} ", n(-extra / t.size * 1000.0)).bytes());
+                }
+            }
+            out.extend_from_slice(b"] TJ\n");
+        }
+    }
+    out.extend_from_slice(b"ET\n");
+    Ok(fonts)
 }
 
 fn font_name(base: &str) -> String {
@@ -704,6 +775,11 @@ fn draw(doc: &mut Document, c: &Content, view: [f64; 6], taken: &Dict, existing:
     let mut out = format!("q {} {} {} {} {} {} cm\n", n(view[0]), n(view[1]), n(view[2]), n(view[3]), n(view[4]), n(view[5])).into_bytes();
     match c {
         Content::Text(t) => {
+            if t.text.chars().any(crate::text::is_hangul) {
+                res.set(b"Font".to_vec(), Object::Dict(draw_korean(doc, t, taken, &mut out)?));
+                out.extend_from_slice(b"Q\n");
+                return Ok((out, res));
+            }
             let base = t.family.base_font(t.bold, t.italic);
             let name = font_name(base);
             let mut font = Dict::new();
@@ -1078,7 +1154,11 @@ pub fn delete_content(doc: &mut Document, page: usize, index: usize) -> Result<(
 fn own_fonts(doc: &Document, obj: ObjRef) -> Vec<Vec<u8>> {
     let Object::Stream(s) = &*doc.get(obj) else { return Vec::new() };
     let Ok(data) = s.decoded() else { return Vec::new() };
-    data.split(u8::is_ascii_whitespace).filter_map(|w| w.strip_prefix(b"/")).filter(|w| w.starts_with(b"PCAr")).map(<[u8]>::to_vec).collect()
+    data.split(u8::is_ascii_whitespace)
+        .filter_map(|w| w.strip_prefix(b"/"))
+        .filter(|w| w.starts_with(b"PCAr") || w.starts_with(b"PCKr"))
+        .map(<[u8]>::to_vec)
+        .collect()
 }
 
 fn drop_fonts(doc: &Document, res: &mut Dict, names: &[Vec<u8>]) {

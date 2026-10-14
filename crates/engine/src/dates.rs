@@ -56,7 +56,7 @@ const AR_DAYS: [&str; 7] = ["الأحد", "الاثنين", "الثلاثاء", 
 
 /// The languages month and weekday names can be written in (Preferences ▸ Date format ▸ Language):
 /// the interface languages, in the same order and with the same names.
-pub static DATE_LANGUAGES: [DateLanguage; 22] = [
+pub static DATE_LANGUAGES: [DateLanguage; 23] = [
     DateLanguage {
         code: "en",
         name: "English",
@@ -65,6 +65,15 @@ pub static DATE_LANGUAGES: [DateLanguage; 22] = [
         months_short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         days_short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    },
+    DateLanguage {
+        code: "ko",
+        name: "한국어",
+        months: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+        months_with_day: None,
+        months_short: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+        days: ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"],
+        days_short: ["일", "월", "화", "수", "목", "금", "토"],
     },
     DateLanguage {
         code: "ja",
@@ -648,6 +657,13 @@ mod tests {
         for l in &DATE_LANGUAGES {
             assert!(l.months.iter().chain(&l.months_short).chain(&l.days).chain(&l.days_short).all(|n| !n.is_empty()), "{}", l.code);
         }
+    }
+
+    #[test]
+    fn korean_month_and_weekday_names() {
+        assert_eq!(in_lang("yyyy년 mmmm d일 dddd", "ko"), "2026년 3월 7일 토요일");
+        assert_eq!(in_lang("ddd", "ko"), "토");
+        assert_eq!(date_language("KO").map(|l| l.code), Some("ko"));
     }
 
     #[test]

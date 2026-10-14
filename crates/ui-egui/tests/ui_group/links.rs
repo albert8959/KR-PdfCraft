@@ -1,5 +1,4 @@
-//! Community links: the Discord button is one click away everywhere; Help menu, About dialog and
-//! home screen open the ArtCraft and PdfCraft pages.
+//! Independent fork links: toolbar, Help, About and Home open this fork's GitHub pages.
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
@@ -20,22 +19,22 @@ fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> Harness<'static, P
 #[test]
 fn discord_button_in_the_top_bar_opens_discord() {
     let mut h = harness(|_| {});
-    h.get_by_label("Discord").click();
+    h.get_by_label("GitHub").click();
     h.run_steps(2);
     assert_eq!(h.state().last_opened_url.as_deref(), Some(links::DISCORD));
-    assert_eq!(links::DISCORD, "https://discord.gg/artcraft");
+    assert_eq!(links::DISCORD, "https://github.com/albert8959/KR-PdfCraft/issues");
 }
 
 #[test]
 fn home_screen_links() {
     for (label, url) in [
-        ("Join our Discord", links::DISCORD),
-        ("PdfCraft web page", "https://getartcraft.com/apps/pdfcraft"),
-        ("PdfCraft on GitHub", "https://github.com/storytold/pdfcraft"),
-        ("ArtCraft website", "https://getartcraft.com"),
+        ("KR-PdfCraft issues", links::DISCORD),
+        ("PdfCraft web page", "https://github.com/albert8959/KR-PdfCraft"),
+        ("PdfCraft on GitHub", "https://github.com/albert8959/KR-PdfCraft"),
+        ("KR-PdfCraft website", "https://github.com/albert8959/KR-PdfCraft"),
     ] {
         let mut h = harness(|_| {});
-        h.get_by_label("Join the ArtCraft community");
+        h.get_by_label("KR-PdfCraft development");
         h.get_by_label(label).click();
         h.run_steps(2);
         assert_eq!(h.state().last_opened_url.as_deref(), Some(url), "{label}");
@@ -50,8 +49,9 @@ fn about_dialog_shows_the_brand_and_links() {
         app.open_bytes("one.pdf", None, pdf.to_vec()).unwrap();
         app.dialog = Some(Dialog::About);
     });
-    assert!(h.query_all_by_label("ArtCraft").count() >= 2, "the mark and the wordmark (alt text)");
-    h.get_by_label("Join our Discord").click();
+    assert_eq!(h.query_all_by_label("ArtCraft").count(), 0, "no upstream trademark artwork");
+    h.get_by_label("Independent fork of PdfCraft");
+    h.get_by_label("KR-PdfCraft issues").click();
     h.run_steps(2);
     assert_eq!(h.state().last_opened_url.as_deref(), Some(links::DISCORD));
 }

@@ -2680,7 +2680,11 @@ fn creating_from_text_refuses_what_the_font_cannot_draw() {
     assert_eq!(page_text(&mut a, d).len(), 2);
     // #959: page_add_text refuses it too.
     let doc = ok(&mut a, "doc_create", json!({ "from": "blank" }))["doc"].as_u64().unwrap();
-    refused(a.call("page_add_text", &json!({ "doc": doc, "page": 1, "text": "ABC 제안서 시험", "at": [20, 20] })));
+    if pdfcraft_fonts::document_korean_fonts_for_style(false).is_empty() {
+        refused(a.call("page_add_text", &json!({ "doc": doc, "page": 1, "text": "ABC 제안서 시험", "at": [20, 20] })));
+    } else {
+        ok(&mut a, "page_add_text", json!({ "doc": doc, "page": 1, "text": "ABC 제안서 시험", "at": [20, 20] }));
+    }
 }
 
 #[test]
@@ -5671,4 +5675,28 @@ fn absolute_gotor_consent_does_not_bypass_validation_or_passwords() {
     let opened = ok(&mut a, "link_open", json!({ "doc": doc, "page": 1, "index": 1, "allow_absolute": true, "password": "secret" }));
     assert_eq!(opened["document"]["encrypted"], true);
     assert_eq!(opened["destination_applied"], true);
+}
+
+#[test]
+fn korean_content_tools_save_reopen_search_and_render() {
+    if pdfcraft_fonts::document_korean_fonts_for_style(false).is_empty() {
+        return;
+    }
+    let dir = workdir("korean-roundtrip");
+    let mut a = auto(&dir);
+    let id = ok(&mut a, "doc_create", json!({"from":"blank","width":600,"height":400}))["doc"].as_u64().unwrap();
+    let original = "한글 PDF 추가 테스트 123";
+    ok(&mut a, "page_add_text", json!({"doc":id,"page":1,"text":original,"at":[40,50],"width":500,"size":18}));
+    assert_eq!(page_text(&mut a, id), [original]);
+    let updated = "한글 수정 저장 확인 가나다";
+    ok(&mut a, "content_update", json!({"doc":id,"page":1,"index":1,"text":updated,"bold":true}));
+    let rendered = a.call("page_render", &json!({"doc":id,"page":1,"dpi":72})).unwrap();
+    ok(&mut a, "doc_save", json!({"doc":id,"path":"한글 저장.pdf"}));
+    let re = ok(&mut a, "doc_open", json!({"path":"한글 저장.pdf"}))["doc"].as_u64().unwrap();
+    assert_eq!(page_text(&mut a, re), [updated]);
+    assert_eq!(ok(&mut a, "text_find", json!({"doc":re,"query":"가나다"}))["matches"].as_array().unwrap().len(), 1);
+    assert_eq!(rendered, a.call("page_render", &json!({"doc":re,"page":1,"dpi":72})).unwrap());
+    ok(&mut a, "content_delete", json!({"doc":re,"page":1,"index":1}));
+    assert_eq!(page_text(&mut a, re), [""]);
+    std::fs::remove_dir_all(dir).unwrap();
 }

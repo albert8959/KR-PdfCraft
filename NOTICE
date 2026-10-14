@@ -3,9 +3,9 @@ Copyright (c) 2026 ArtCraft Team and the PdfCraft contributors.
 Licensed under the MIT License or the Apache License, Version 2.0, at your option
 (LICENSE-MIT, LICENSE-APACHE).
 
-The ArtCraft name, wordmark and logos in docs/brand/ are trademarks of the ArtCraft Team. They are
-not open source and are not covered by the license above; their terms are in
-docs/brand/LICENSE-brand.txt.
+KR-PdfCraft is an independent modified version of PdfCraft. The original ArtCraft brand artwork
+has been removed. ArtCraft trademarks are not licensed under the code licenses; the original
+terms are preserved in docs/brand/LICENSE-brand.txt. No endorsement is implied.
 
 Third-party material
 
@@ -58,3 +58,13 @@ dependencies change (plan/adr/0002, 0006).
 Vendored (vendor/, patched; see vendor/README.md):
 - hayro 0.7.1 — Apache-2.0 OR MIT, Copyright the hayro authors (licence files kept in vendor/hayro).
 - hayro-interpret 0.7.0 — Apache-2.0 OR MIT, Copyright the hayro authors (LICENSE-APACHE, LICENSE-MIT kept in vendor/hayro-interpret).
+
+Optional Korean font input: Nanum Gothic Coding 2.5 Regular and Bold.
+Copyright (c) 2009, NAVER Corporation. Reserved Font Names: NanumGothicCoding and NanumGothicCoding-Bold.
+Licensed under the SIL Open Font License 1.1; unmodified font files are obtained separately,
+never committed here. Packaged Korean builds include OFL-NanumGothicCoding.txt.
+
+Optional UI-only Hangul Jamo fallback: Unifont 15.0.06 (OFL-1.1 option).
+Copyright 1998-2023 Roman Czyborra, Paul Hardy, Qianqian Fang, Andrew Miller,
+Johnnie Weaver, David Corbett, Nils Moskopp, Rebecca Bettencourt, Minseo Lee, et al.
+Korean builds include the unmodified font and OFL-Unifont.txt; no GPL program code is included.
